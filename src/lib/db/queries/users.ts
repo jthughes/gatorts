@@ -9,6 +9,15 @@ export async function createUser(name: string) {
 
 export async function getUserByName(name: string) {
   const result = await db.select().from(users).where(eq(users.name, name));
+  return result;
+}
 
+export async function clearUsersTable() {
+  const result = await db.delete(users);
+  return result;
+}
+
+export async function getAllUsers() {
+  const result = await db.select().from(users);
   return result;
 }

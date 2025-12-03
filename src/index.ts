@@ -6,13 +6,19 @@ import {
   registerCommand,
   runCommand,
 } from "./commands/command";
-import { handlerLogin, handlerRegister } from "./commands/users";
+import {
+  handlerLogin,
+  handlerRegister,
+  handlerReset,
+  handlerUsers,
+} from "./commands/users";
 
 async function main() {
-  const config = readConfig();
   const cmdRegistry: CommandsRegistry = {};
   registerCommand(cmdRegistry, "login", handlerLogin);
   registerCommand(cmdRegistry, "register", handlerRegister);
+  registerCommand(cmdRegistry, "reset", handlerReset);
+  registerCommand(cmdRegistry, "users", handlerUsers);
 
   const cmdName = argv[2];
   const cmdArg = argv.slice(3);

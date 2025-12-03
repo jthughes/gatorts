@@ -1,6 +1,10 @@
-import { Recoverable } from "node:repl";
-import { setUser } from "src/config";
-import { createUser, getUserByName } from "src/lib/db/queries/users";
+import { readConfig, setUser } from "src/config";
+import {
+  clearUsersTable,
+  createUser,
+  getAllUsers,
+  getUserByName,
+} from "src/lib/db/queries/users";
 
 export async function handlerLogin(cmdName: string, ...args: string[]) {
   if (args.length !== 1) {
@@ -27,5 +31,33 @@ export async function handlerRegister(cmdName: string, ...args: string[]) {
     console.log(record);
   } catch (err) {
     throw new Error(`unable to register new user`);
+  }
+}
+
+export async function handlerReset(cmdName: string, ...args: string[]) {
+  try {
+    const result = await clearUsersTable();
+    console.log("removed all users successfully");
+  } catch (err) {
+    console.log(`failed to remove users: ${err}`);
+  }
+}
+
+export async function handlerUsers(cmdName: string, ...args: string[]) {
+  try {
+    const result = await getAllUsers();
+
+    const config = readConfig();
+    const currentUser = config.currentUserName;
+
+    for (const entry of result) {
+      if (currentUser == undefined || entry.name != currentUser) {
+        console.log(`* ${entry.name}`);
+      } else {
+        console.log(`* ${entry.name} (current)`);
+      }
+    }
+  } catch (err) {
+    console.log(`failed to display users: ${err}`);
   }
 }
