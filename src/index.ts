@@ -1,16 +1,18 @@
 import { argv, exit } from "node:process";
+
+import { readConfig } from "./config";
 import {
   CommandsRegistry,
-  handlerLogin,
   registerCommand,
   runCommand,
-} from "./command";
-import { setUser, readConfig } from "./config";
+} from "./commands/command";
+import { handlerLogin, handlerRegister } from "./commands/users";
 
-function main() {
+async function main() {
   const config = readConfig();
   const cmdRegistry: CommandsRegistry = {};
   registerCommand(cmdRegistry, "login", handlerLogin);
+  registerCommand(cmdRegistry, "register", handlerRegister);
 
   const cmdName = argv[2];
   const cmdArg = argv.slice(3);
@@ -20,11 +22,16 @@ function main() {
     exit(1);
   }
   try {
-    runCommand(cmdRegistry, cmdName, ...cmdArg);
+    await runCommand(cmdRegistry, cmdName, ...cmdArg);
   } catch (err) {
-    console.log(` ${err}`);
-    exit(1);
+    if (err instanceof Error) {
+      console.log(`Error: ${err.message}`);
+    } else {
+      console.log(`Error: ${err}`);
+    }
+    process.exit(1);
   }
+  process.exit(0);
 }
 
 main();

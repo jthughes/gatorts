@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsx ./src/index.ts"
+    "start": "tsx ./src/index.ts",
+    "generate": "drizzle-kit generate",
+    "migrate": "drizzle-kit migrate"
   },
   "repository": {
     "type": "git",
@@ -21,8 +22,13 @@
   "homepage": "https://github.com/jthughes/gatorts#readme",
   "devDependencies": {
     "@types/node": "^24.10.1",
+    "drizzle-kit": "^0.18.1",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "zod": "^4.1.13"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.44.7",
+    "postgres": "^3.4.7"
   }
 }
