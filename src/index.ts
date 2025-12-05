@@ -12,6 +12,7 @@ import {
   handlerReset,
   handlerUsers,
 } from "./commands/users";
+import { handlerAddFeed, handlerAgg, handlerFeeds } from "./commands/feeds";
 
 async function main() {
   const cmdRegistry: CommandsRegistry = {};
@@ -19,6 +20,9 @@ async function main() {
   registerCommand(cmdRegistry, "register", handlerRegister);
   registerCommand(cmdRegistry, "reset", handlerReset);
   registerCommand(cmdRegistry, "users", handlerUsers);
+  registerCommand(cmdRegistry, "agg", handlerAgg);
+  registerCommand(cmdRegistry, "addfeed", handlerAddFeed);
+  registerCommand(cmdRegistry, "feeds", handlerFeeds);
 
   const cmdName = argv[2];
   const cmdArg = argv.slice(3);
