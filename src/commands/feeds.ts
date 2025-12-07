@@ -1,6 +1,10 @@
 import { XMLParser } from "fast-xml-parser";
 import { readConfig } from "src/config";
-import { addFeed, getAllFeeds } from "src/lib/db/queries/feeds";
+import { addFeed, getAllFeeds, getFeedByUrl } from "src/lib/db/queries/feeds";
+import {
+  createFeedFollow,
+  getFeedFollowsForUser,
+} from "src/lib/db/queries/follows";
 import { getUserByID, getUserByName } from "src/lib/db/queries/users";
 import { Feed, User } from "src/lib/db/schema";
 
@@ -88,11 +92,12 @@ export async function handlerAgg(cmdName: string, ...args: string[]) {
   // }
   const feedURL = "https://www.wagslane.dev/index.xml";
 
-  const feed = await fetchFeed(feedURL);
-  console.log(feed);
-  for (const item of feed.channel.item) {
-    console.log(item);
-  }
+  console.log("The Zen of Proverbs Optimize for simplicity");
+  // const feed = await fetchFeed(feedURL);
+  // console.log(feed);
+  // for (const item of feed.channel.item) {
+  //   console.log(item);
+  // }
 }
 
 export async function handlerAddFeed(cmdName: string, ...args: string[]) {
@@ -110,6 +115,8 @@ export async function handlerAddFeed(cmdName: string, ...args: string[]) {
     throw new Error("Failed to create feed");
   }
   console.log("Feed sucessfully created");
+
+  const followResult = await createFeedFollow(feedURL);
   printFeed(result, user[0]);
 }
 
@@ -128,5 +135,30 @@ export async function handlerFeeds(cmdName: string, ...args: string[]) {
     const user = await getUserByID(feed.user_id);
     printFeed(feed, user[0]);
     console.log("");
+  }
+}
+
+export async function handlerFollow(cmdName: string, ...args: string[]) {
+  if (args.length !== 1) {
+    throw new Error("follow expects arguments <feed_url>");
+  }
+  const cfg = readConfig();
+  const username = cfg.currentUserName || "";
+  const user = await getUserByName(username);
+
+  const feedURL = args[0];
+  const feed = await getFeedByUrl(feedURL);
+  const result = await createFeedFollow(feedURL);
+  console.log(`${user[0].name} is now following the "${feed[0].name}" feed`);
+}
+
+export async function handlerFollowing(cmdName: string, ...args: string[]) {
+  const cfg = readConfig();
+  const username = cfg.currentUserName || "";
+
+  const result = await getFeedFollowsForUser(username);
+  console.log(`${username}'s followed feeds:`);
+  for (const element of result) {
+    console.log(`- ${element.feeds.name}`);
   }
 }

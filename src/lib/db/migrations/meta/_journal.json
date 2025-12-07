@@ -15,6 +15,13 @@
       "when": 1764837305890,
       "tag": "0001_thick_tana_nile",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1764978175087,
+      "tag": "0002_shocking_hiroim",
+      "breakpoints": true
     }
   ]
 }
