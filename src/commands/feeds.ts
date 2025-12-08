@@ -4,6 +4,7 @@ import { addFeed, getAllFeeds, getFeedByUrl } from "src/lib/db/queries/feeds";
 import {
   createFeedFollow,
   getFeedFollowsForUser,
+  removeFeedFollowForUser,
 } from "src/lib/db/queries/follows";
 import { getUserByID, getUserByName } from "src/lib/db/queries/users";
 import { Feed, User } from "src/lib/db/schema";
@@ -118,7 +119,7 @@ export async function handlerAddFeed(
   }
   console.log("Feed sucessfully created");
 
-  const followResult = await createFeedFollow(feedURL);
+  const followResult = await createFeedFollow(result, user);
   printFeed(result, user);
 }
 
@@ -135,7 +136,10 @@ export async function handlerFeeds(cmdName: string, ...args: string[]) {
   const result = await getAllFeeds();
   for (const feed of result) {
     const user = await getUserByID(feed.user_id);
-    printFeed(feed, user[0]);
+    if (!user) {
+      continue;
+    }
+    printFeed(feed, user);
     console.log("");
   }
 }
@@ -151,8 +155,11 @@ export async function handlerFollow(
 
   const feedURL = args[0];
   const feed = await getFeedByUrl(feedURL);
-  const result = await createFeedFollow(feedURL);
-  console.log(`${user.name} is now following the "${feed[0].name}" feed`);
+  if (!feed) {
+    throw new Error(`Feed "${feedURL} not found`);
+  }
+  const result = await createFeedFollow(feed, user);
+  console.log(`${user.name} is now following the "${feed.name}" feed`);
 }
 
 export async function handlerFollowing(
@@ -160,9 +167,25 @@ export async function handlerFollowing(
   user: User,
   ...args: string[]
 ) {
-  const result = await getFeedFollowsForUser(user.name);
+  const result = await getFeedFollowsForUser(user);
   console.log(`${user.name}'s followed feeds:`);
   for (const element of result) {
     console.log(`- ${element.feeds.name}`);
   }
+}
+
+export async function handlerUnfollow(
+  cmdName: string,
+  user: User,
+  ...args: string[]
+) {
+  if (args.length !== 1) {
+    throw new Error(`${cmdName} expects 1 argument: <feed_url>`);
+  }
+  const feedURL = args[0];
+  const feed = await getFeedByUrl(feedURL);
+  if (!feed) {
+    throw new Error("");
+  }
+  const result = await removeFeedFollowForUser(user, feed);
 }

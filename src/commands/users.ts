@@ -12,7 +12,10 @@ export async function handlerLogin(cmdName: string, ...args: string[]) {
   }
   const username = args[0];
   try {
-    const [record] = await getUserByName(username);
+    const record = await getUserByName(username);
+    if (!record) {
+      throw new Error("");
+    }
     setUser(record.name);
     console.log(`User "${username}" has successfully logged in`);
   } catch {

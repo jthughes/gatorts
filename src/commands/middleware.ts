@@ -19,6 +19,6 @@ export function middlewareLoggedIn(
       throw new Error(`User ${userName} not found`);
     }
 
-    await handler(cmdName, user[0], ...args);
+    await handler(cmdName, user, ...args);
   };
 }

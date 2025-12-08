@@ -1,6 +1,7 @@
 import { db } from "..";
 import { feeds } from "../schema";
 import { eq } from "drizzle-orm";
+import { firstOrUndefined } from "./uttils";
 
 export async function addFeed(
   userId: string,
@@ -21,5 +22,5 @@ export async function getAllFeeds() {
 
 export async function getFeedByUrl(url: string) {
   const result = await db.select().from(feeds).where(eq(feeds.url, url));
-  return result;
+  return firstOrUndefined(result);
 }
