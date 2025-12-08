@@ -100,16 +100,18 @@ export async function handlerAgg(cmdName: string, ...args: string[]) {
   // }
 }
 
-export async function handlerAddFeed(cmdName: string, ...args: string[]) {
+export async function handlerAddFeed(
+  cmdName: string,
+  user: User,
+  ...args: string[]
+) {
   if (args.length !== 2) {
-    throw new Error("login expects arguments <feed_name> <feed_url>");
+    throw new Error(`${cmdName} expects arguments <feed_name> <feed_url>`);
   }
-  const cfg = readConfig();
-  const username = cfg.currentUserName || "";
-  const user = await getUserByName(username);
+
   const feedName = args[0];
   const feedURL = args[1];
-  const result = await addFeed(user[0].id, feedName, feedURL);
+  const result = await addFeed(user.id, feedName, feedURL);
 
   if (!result) {
     throw new Error("Failed to create feed");
@@ -117,7 +119,7 @@ export async function handlerAddFeed(cmdName: string, ...args: string[]) {
   console.log("Feed sucessfully created");
 
   const followResult = await createFeedFollow(feedURL);
-  printFeed(result, user[0]);
+  printFeed(result, user);
 }
 
 function printFeed(feed: Feed, user: User) {
@@ -138,26 +140,28 @@ export async function handlerFeeds(cmdName: string, ...args: string[]) {
   }
 }
 
-export async function handlerFollow(cmdName: string, ...args: string[]) {
+export async function handlerFollow(
+  cmdName: string,
+  user: User,
+  ...args: string[]
+) {
   if (args.length !== 1) {
-    throw new Error("follow expects arguments <feed_url>");
+    throw new Error(`${cmdName} expects arguments <feed_url>`);
   }
-  const cfg = readConfig();
-  const username = cfg.currentUserName || "";
-  const user = await getUserByName(username);
 
   const feedURL = args[0];
   const feed = await getFeedByUrl(feedURL);
   const result = await createFeedFollow(feedURL);
-  console.log(`${user[0].name} is now following the "${feed[0].name}" feed`);
+  console.log(`${user.name} is now following the "${feed[0].name}" feed`);
 }
 
-export async function handlerFollowing(cmdName: string, ...args: string[]) {
-  const cfg = readConfig();
-  const username = cfg.currentUserName || "";
-
-  const result = await getFeedFollowsForUser(username);
-  console.log(`${username}'s followed feeds:`);
+export async function handlerFollowing(
+  cmdName: string,
+  user: User,
+  ...args: string[]
+) {
+  const result = await getFeedFollowsForUser(user.name);
+  console.log(`${user.name}'s followed feeds:`);
   for (const element of result) {
     console.log(`- ${element.feeds.name}`);
   }

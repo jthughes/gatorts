@@ -19,6 +19,7 @@ import {
   handlerFollow,
   handlerFollowing,
 } from "./commands/feeds";
+import { middlewareLoggedIn } from "./commands/middleware";
 
 async function main() {
   const cmdRegistry: CommandsRegistry = {};
@@ -27,10 +28,14 @@ async function main() {
   registerCommand(cmdRegistry, "reset", handlerReset);
   registerCommand(cmdRegistry, "users", handlerUsers);
   registerCommand(cmdRegistry, "agg", handlerAgg);
-  registerCommand(cmdRegistry, "addfeed", handlerAddFeed);
+  registerCommand(cmdRegistry, "addfeed", middlewareLoggedIn(handlerAddFeed));
   registerCommand(cmdRegistry, "feeds", handlerFeeds);
-  registerCommand(cmdRegistry, "following", handlerFollowing);
-  registerCommand(cmdRegistry, "follow", handlerFollow);
+  registerCommand(
+    cmdRegistry,
+    "following",
+    middlewareLoggedIn(handlerFollowing),
+  );
+  registerCommand(cmdRegistry, "follow", middlewareLoggedIn(handlerFollow));
 
   const cmdName = argv[2];
   const cmdArg = argv.slice(3);

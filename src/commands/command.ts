@@ -1,3 +1,11 @@
+import { User } from "src/lib/db/schema";
+
+export type UserCommandHandler = (
+  cmdName: string,
+  user: User,
+  ...args: string[]
+) => Promise<void>;
+
 export type CommandHandler = (
   cmdName: string,
   ...args: string[]
