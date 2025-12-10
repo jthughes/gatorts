@@ -1,0 +1,29 @@
+# Gator
+## Description
+Gator is a CLI app built in TypeScript that allows multiple users to register, follow, and consume RSS feeds.
+
+## Requirements
+- node: v22.15.0
+- nvm
+
+## Installation
+- Install nvm.
+- Create ``~/.gatorconfig.json`` with the following fields:
+```json
+{
+  "current_user_name": "",
+  "db_url": "postgres://<username:password@url:port>/gator?sslmode=disable"
+}
+- Run ``npm run start <command>`` to get started.
+```
+
+## Usage
+- ``login <username>``: Login as ``<username>``.
+- ``register <username>``: Register ``<username>`` as new username.
+- ``agg <time_between_requests>``: Retrieves posts from all feeds on the specified duration, for example "30s".
+- ``addfeed <feed_name> <feed_url>``: Add a new RSS feed url to the the lists of feeds that can be followed, and follows it for the current user.
+- ``feeds``: Lists all feeds.
+- ``follow <feed_url>``: Follows a feed that has already been registered by the ``addfeed`` command.
+- ``following``: Lists all feeds that the current user is following.
+- ``unfollow <feed_url>``: Unfollows a feed.
+- ``browse (<limit>)``: Displays ``<limit>`` amount of posts (2 if unspecified).
