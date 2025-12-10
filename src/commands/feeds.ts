@@ -1,12 +1,19 @@
 import { XMLParser } from "fast-xml-parser";
-import { readConfig } from "src/config";
-import { addFeed, getAllFeeds, getFeedByUrl } from "src/lib/db/queries/feeds";
+
+import {
+  addFeed,
+  getAllFeeds,
+  getFeedByUrl,
+  getNextFeedToFetch,
+  markFeedFetched,
+} from "src/lib/db/queries/feeds";
 import {
   createFeedFollow,
   getFeedFollowsForUser,
   removeFeedFollowForUser,
 } from "src/lib/db/queries/follows";
-import { getUserByID, getUserByName } from "src/lib/db/queries/users";
+import { createPost } from "src/lib/db/queries/posts";
+import { getUserByID } from "src/lib/db/queries/users";
 import { Feed, User } from "src/lib/db/schema";
 
 type RSSFeed = {
@@ -18,7 +25,7 @@ type RSSFeed = {
   };
 };
 
-type RSSItem = {
+export type RSSItem = {
   title: string;
   link: string;
   description: string;
@@ -87,18 +94,74 @@ export async function fetchFeed(feedURL: string) {
   return rssFeed;
 }
 
-export async function handlerAgg(cmdName: string, ...args: string[]) {
-  // if (args.length !== 1) {
-  //   throw new Error("login expects single argument <username>");
-  // }
-  const feedURL = "https://www.wagslane.dev/index.xml";
+async function scrapeFeeds() {
+  const nextFeed = await getNextFeedToFetch();
+  if (nextFeed == undefined) {
+    throw new Error("feed not found");
+  }
+  await markFeedFetched(nextFeed);
+  const rss = await fetchFeed(nextFeed.url);
+  console.log(`${rss.channel.title} <${rss.channel.link}>`);
+  for (const item of rss.channel.item) {
+    console.log(`- ${item.title}`);
+    createPost(item, nextFeed);
+  }
+  console.log("");
+}
 
-  console.log("The Zen of Proverbs Optimize for simplicity");
-  // const feed = await fetchFeed(feedURL);
-  // console.log(feed);
-  // for (const item of feed.channel.item) {
-  //   console.log(item);
-  // }
+function parseDuration(durationStr: string): number {
+  let order_of_magnitude: number = 1;
+  let text: string = "";
+  if (durationStr.endsWith("ms")) {
+    text = durationStr.slice(0, text.lastIndexOf("ms"));
+  } else if (durationStr.endsWith("s")) {
+    text = durationStr.slice(0, text.lastIndexOf("s"));
+    order_of_magnitude = 1000;
+  } else if (durationStr.endsWith("m")) {
+    text = durationStr.slice(0, text.lastIndexOf("m"));
+    order_of_magnitude = 1000 * 60;
+  } else if (durationStr.endsWith("h")) {
+    text = durationStr.slice(0, text.lastIndexOf("h"));
+    order_of_magnitude = 1000 * 60 * 60;
+  } else {
+    throw new Error("invalid duration unit");
+  }
+  const number = parseInt(text, 10);
+  if (isNaN(number)) {
+    throw new Error("invalid duration number");
+  }
+  return number * order_of_magnitude;
+}
+
+function handleError(err: unknown) {
+  console.log(
+    `Error scraping feeds: ${err instanceof Error ? err.message : err}`,
+  );
+}
+
+export async function handlerAgg(cmdName: string, ...args: string[]) {
+  if (args.length !== 1) {
+    throw new Error(`${cmdName} expects single argument <time_between_reqs>`);
+  }
+
+  const timeText = args[0];
+  const time_between_reqs_ms = parseDuration(timeText);
+
+  scrapeFeeds().catch(handleError);
+
+  console.log(`Collecting feeds every ${timeText}`);
+
+  const interval = setInterval(() => {
+    scrapeFeeds().catch(handleError);
+  }, time_between_reqs_ms);
+
+  await new Promise<void>((resolve) => {
+    process.on("SIGINT", () => {
+      console.log("Shutting down feed aggregator...");
+      clearInterval(interval);
+      resolve();
+    });
+  });
 }
 
 export async function handlerAddFeed(

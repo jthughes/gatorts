@@ -8,7 +8,7 @@ import {
 
 export async function handlerLogin(cmdName: string, ...args: string[]) {
   if (args.length !== 1) {
-    throw new Error("login expects single argument <username>");
+    throw new Error(`${cmdName} expects single argument <username>`);
   }
   const username = args[0];
   try {

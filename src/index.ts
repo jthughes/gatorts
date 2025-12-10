@@ -21,6 +21,7 @@ import {
   handlerUnfollow,
 } from "./commands/feeds";
 import { middlewareLoggedIn } from "./commands/middleware";
+import { handlerBrowse } from "./commands/posts";
 
 async function main() {
   const cmdRegistry: CommandsRegistry = {};
@@ -38,6 +39,7 @@ async function main() {
   );
   registerCommand(cmdRegistry, "follow", middlewareLoggedIn(handlerFollow));
   registerCommand(cmdRegistry, "unfollow", middlewareLoggedIn(handlerUnfollow));
+  registerCommand(cmdRegistry, "browse", middlewareLoggedIn(handlerBrowse));
 
   const cmdName = argv[2];
   const cmdArg = argv.slice(3);
